@@ -17,12 +17,6 @@
 
 #define PHP_GPIO_VERSION "0.2.0-DEV"
 
-#define PHP_GPIO_LOW  LOW
-#define PHP_GPIO_HIGH HIGH
-
-#define PHP_GPIO_INPUT  INPUT
-#define PHP_GPIO_OUTPUT OUTPUT
-
 #include "php.h"
 
 #ifdef ZTS
