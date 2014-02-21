@@ -29,9 +29,11 @@ extern zend_module_entry gpio_module_entry;
 PHP_MINIT_FUNCTION(gpio);
 PHP_MSHUTDOWN_FUNCTION(gpio);
 
-PHP_FUNCTION(gpio_setup);
+PHP_FUNCTION(gpio_mode);
 PHP_FUNCTION(gpio_pin_mode);
 PHP_FUNCTION(gpio_read);
 PHP_FUNCTION(gpio_write);
+
+void _wp_setup_mode(void);
 
 #endif

@@ -12,6 +12,10 @@ You can send comments, patches, questions [on GitHub](https://github.com/Francis
 2. [Usage](#usage)
     * [Predefined constants](#predefinedconstants)
     * [Functions](#functions)
+        * [gpio_mode](#gpio_modeint-mode)
+        * [gpio_pin_mode](#gpio_pin_modeint-pin-int-mode)
+        * [gpio_read](#gpio_readint-pin)
+        * [gpio_write](#gpio_writeint-pin-int-value)
 
 ## Installing/Configuring
 
@@ -30,6 +34,9 @@ make && make install
 ### Predefined constants
 
 ```
+GPIO_MODE_PINS - Mode PINS
+GPIO_MODE_GPIO - Mode GPIO
+
 GPIO_LOW - Value low
 GPIO_HIGH - Value high
 
@@ -39,22 +46,28 @@ GPIO_OUTPUT - Mode output
 
 ### Functions
 
-#### gpio_setup()
+#### gpio_mode([int $mode])
 
-This function must be called in first without arguments.
+Return the current mode if `$mode` is not specified.
+Return the old mode if `$mode` is specified.
+
+The default mode is `GPIO_MODE_PINS`.
 
 ```php
-gpio_setup();
+$oldMode = gpio_mode(GPIO_MODE_GPIO); // set GPIO_MODE_GPIO mode
+$currentMode = gpio_mode(); // $currentMode === GPIO_MODE_GPIO
+
+gpio_pin_mode(18, GPIO_OUPUT);
+gpio_write(18, GPIO_HIGH);
 ```
 
-The function return `true`.
+The function return `GPIO_MODE_PINS` or `GPIO_MODE_GPIO`.
 
 #### gpio_pin_mode(int $pin, int $mode)
 
 Set the mode for a pin.
 
 ```php
-gpio_setup();
 gpio_pin_mode(1, GPIO_OUTPUT); // set the pin #1 to output mode
 ```
 
@@ -65,7 +78,6 @@ The function return `true`.
 Get the value for a pin.
 
 ```php
-gpio_setup();
 gpio_pin_mode(1, GPIO_INPUT);
 
 if ($pin1Value === gpio_read(1)) {
@@ -82,7 +94,6 @@ The function return `GPIO_HIGH` or `GPIO_LOW` constant value.
 Set the value for a pin.
 
 ```php
-gpio_setup();
 gpio_pin_mode(1, GPIO_OUTPUT); // set the pin #1 to output mode
 gpio_write(1, GPIO_HIGH); // set the pin #1 to high value
 ```

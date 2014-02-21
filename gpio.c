@@ -24,8 +24,20 @@
 ZEND_GET_MODULE(gpio)
 #endif
 
+#ifndef TRUE
+#define TRUE  (1==1)
+#define FALSE (1==2)
+#endif
+
+static int isInitialized = FALSE;
+static int wpMode = WPI_MODE_PINS;
+
 PHP_MINIT_FUNCTION(gpio)
 {
+  /* wp modes */
+  REGISTER_LONG_CONSTANT("GPIO_MODE_PINS", WPI_MODE_PINS, CONST_CS | CONST_PERSISTENT);
+  REGISTER_LONG_CONSTANT("GPIO_MODE_GPIO", WPI_MODE_GPIO, CONST_CS | CONST_PERSISTENT);
+
   /* values */
   REGISTER_LONG_CONSTANT("GPIO_LOW", LOW, CONST_CS | CONST_PERSISTENT);
   REGISTER_LONG_CONSTANT("GPIO_HIGH", HIGH, CONST_CS | CONST_PERSISTENT);
@@ -37,7 +49,8 @@ PHP_MINIT_FUNCTION(gpio)
   return SUCCESS;
 }
 
-ZEND_BEGIN_ARG_INFO(arginfo_gpio_setup, 0)
+ZEND_BEGIN_ARG_INFO(arginfo_gpio_mode, 0)
+  ZEND_ARG_INFO(0, mode)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO(arginfo_gpio_pin_mode, 0)
@@ -55,7 +68,7 @@ ZEND_BEGIN_ARG_INFO(arginfo_gpio_write, 0)
 ZEND_END_ARG_INFO()
 
 zend_function_entry gpio_functions[] = {
-  PHP_FE(gpio_setup, arginfo_gpio_setup)
+  PHP_FE(gpio_mode, arginfo_gpio_mode)
   PHP_FE(gpio_pin_mode, arginfo_gpio_pin_mode)
   PHP_FE(gpio_read, arginfo_gpio_read)
   PHP_FE(gpio_write, arginfo_gpio_write)
@@ -75,15 +88,42 @@ zend_module_entry gpio_module_entry = {
   STANDARD_MODULE_PROPERTIES
 };
 
-PHP_FUNCTION(gpio_setup)
+PHP_FUNCTION(gpio_mode)
 {
-  if (zend_parse_parameters_none() == FAILURE) {
+  // return the current mode
+  ZVAL_LONG(return_value,wpMode);
+
+  // call function without args (read current mode)
+  if (ZEND_NUM_ARGS() == 0) {
     return;
   }
 
-  wiringPiSetup();
+  long newMode;
 
-  RETURN_TRUE;
+  // call function with 1 arg (set new mode)
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "l", &newMode) == FAILURE) {
+    return;
+  }
+
+  if (newMode == wpMode) {
+    return; // do nothing
+  }
+
+  switch (newMode) {
+    case WPI_MODE_GPIO:
+      wpMode = WPI_MODE_GPIO;
+      break;
+
+    case WPI_MODE_PINS:
+      wpMode = WPI_MODE_PINS;
+      break;
+
+    default:
+      php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid GPIO mode");
+      return;
+  }
+
+  isInitialized = FALSE;
 }
 
 PHP_FUNCTION(gpio_pin_mode)
@@ -94,6 +134,7 @@ PHP_FUNCTION(gpio_pin_mode)
     return;
   }
 
+  _wp_setup_mode();
   pinMode((int) pin, (int) mode);
 
   RETURN_TRUE;
@@ -107,6 +148,7 @@ PHP_FUNCTION(gpio_read)
     return;
   }
 
+  _wp_setup_mode();
   result = (long) digitalRead((int) pin);
   {
     ZVAL_LONG(return_value,result);
@@ -123,7 +165,23 @@ PHP_FUNCTION(gpio_write)
     return;
   }
 
+  _wp_setup_mode();
   digitalWrite((int) pin, (int) value);
 
   RETURN_TRUE;
+}
+
+void _wp_setup_mode(void)
+{
+  if (isInitialized) {
+    return;
+  }
+
+  if (wpMode == WPI_MODE_GPIO) {
+    wiringPiSetupGpio();
+  } else {
+    wiringPiSetup();
+  }
+
+  isInitialized = TRUE;
 }
