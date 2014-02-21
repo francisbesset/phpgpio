@@ -132,9 +132,10 @@ PHP_FUNCTION(gpio_pin_mode)
 
   if(zend_parse_parameters(ZEND_NUM_ARGS(), "ll", &pin, &mode) == FAILURE) {
     return;
+  } else if (!_wp_setup_mode()) {
+    return;
   }
 
-  _wp_setup_mode();
   pinMode((int) pin, (int) mode);
 
   RETURN_TRUE;
@@ -146,9 +147,10 @@ PHP_FUNCTION(gpio_read)
 
   if(zend_parse_parameters(ZEND_NUM_ARGS(), "l", &pin) == FAILURE) {
     return;
+  } else if (!_wp_setup_mode()) {
+    return;
   }
 
-  _wp_setup_mode();
   result = (long) digitalRead((int) pin);
   {
     ZVAL_LONG(return_value,result);
@@ -163,18 +165,23 @@ PHP_FUNCTION(gpio_write)
 
   if(zend_parse_parameters(ZEND_NUM_ARGS(), "ll", &pin, &value) == FAILURE) {
     return;
+  } else if (!_wp_setup_mode()) {
+    return;
   }
 
-  _wp_setup_mode();
   digitalWrite((int) pin, (int) value);
 
   RETURN_TRUE;
 }
 
-void _wp_setup_mode(void)
+int _wp_setup_mode(void)
 {
   if (isInitialized) {
-    return;
+    return 1;
+  } else if (geteuid() != 0) {
+    php_error_docref(NULL TSRMLS_CC, E_WARNING, "You must be root to use the current mode. (Did you forget sudo?)");
+
+    return 0;
   }
 
   if (wpMode == WPI_MODE_GPIO) {
@@ -184,4 +191,6 @@ void _wp_setup_mode(void)
   }
 
   isInitialized = TRUE;
+
+  return 1;
 }

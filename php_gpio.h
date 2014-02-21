@@ -34,6 +34,6 @@ PHP_FUNCTION(gpio_pin_mode);
 PHP_FUNCTION(gpio_read);
 PHP_FUNCTION(gpio_write);
 
-void _wp_setup_mode(void);
+int _wp_setup_mode(void);
 
 #endif
