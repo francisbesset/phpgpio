@@ -84,7 +84,7 @@ gpio_mode(GPIO_MODE_PINS);
 
 gpio_pin_mode(1, GPIO_INPUT);
 
-if ($pin1Value === gpio_read(1)) {
+if (GPIO_HIGH === gpio_read(1)) {
     echo "The pin #1 is HIGH\n";
 } else {
     echo "The pin #1 is LOW\n";
