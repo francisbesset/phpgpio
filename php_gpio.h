@@ -15,7 +15,7 @@
 #ifndef PHP_GPIO_H
 #define PHP_GPIO_H
 
-#define PHP_GPIO_VERSION "0.1.1-DEV"
+#define PHP_GPIO_VERSION "0.1.1"
 
 #define PHP_GPIO_LOW  LOW
 #define PHP_GPIO_HIGH HIGH
