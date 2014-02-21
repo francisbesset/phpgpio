@@ -68,6 +68,8 @@ The function return `GPIO_MODE_PINS` or `GPIO_MODE_GPIO`.
 Set the mode for a pin.
 
 ```php
+gpio_mode(GPIO_MODE_PINS);
+
 gpio_pin_mode(1, GPIO_OUTPUT); // set the pin #1 to output mode
 ```
 
@@ -78,6 +80,8 @@ The function return `true`.
 Get the value for a pin.
 
 ```php
+gpio_mode(GPIO_MODE_PINS);
+
 gpio_pin_mode(1, GPIO_INPUT);
 
 if ($pin1Value === gpio_read(1)) {
@@ -94,6 +98,8 @@ The function return `GPIO_HIGH` or `GPIO_LOW` constant value.
 Set the value for a pin.
 
 ```php
+gpio_mode(GPIO_MODE_PINS);
+
 gpio_pin_mode(1, GPIO_OUTPUT); // set the pin #1 to output mode
 gpio_write(1, GPIO_HIGH); // set the pin #1 to high value
 ```
