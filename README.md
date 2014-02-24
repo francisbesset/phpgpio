@@ -34,8 +34,9 @@ make && make install
 ### Predefined constants
 
 ```
-GPIO_MODE_PINS - Mode PINS
-GPIO_MODE_GPIO - Mode GPIO
+GPIO_MODE_PINS - Mode PINS (needs root user)
+GPIO_MODE_GPIO - Mode GPIO (needs root user)
+GPIO_MODE_GPIO_SYS - Mode GPIO Systems (slightly slower, but always usable as a non-root user)
 
 GPIO_LOW - Value low
 GPIO_HIGH - Value high
@@ -61,7 +62,7 @@ gpio_pin_mode(18, GPIO_OUPUT);
 gpio_write(18, GPIO_HIGH);
 ```
 
-The function return `GPIO_MODE_PINS` or `GPIO_MODE_GPIO`.
+The function return `GPIO_MODE_PINS`, `GPIO_MODE_GPIO` or `GPIO_MODE_GPIO_SYS`.
 
 #### gpio_pin_mode(int $pin, int $mode)
 

@@ -37,6 +37,7 @@ PHP_MINIT_FUNCTION(gpio)
   /* wp modes */
   REGISTER_LONG_CONSTANT("GPIO_MODE_PINS", WPI_MODE_PINS, CONST_CS | CONST_PERSISTENT);
   REGISTER_LONG_CONSTANT("GPIO_MODE_GPIO", WPI_MODE_GPIO, CONST_CS | CONST_PERSISTENT);
+  REGISTER_LONG_CONSTANT("GPIO_MODE_GPIO_SYS", WPI_MODE_GPIO_SYS, CONST_CS | CONST_PERSISTENT);
 
   /* values */
   REGISTER_LONG_CONSTANT("GPIO_LOW", LOW, CONST_CS | CONST_PERSISTENT);
@@ -114,6 +115,10 @@ PHP_FUNCTION(gpio_mode)
       wpMode = WPI_MODE_GPIO;
       break;
 
+    case WPI_MODE_GPIO_SYS:
+      wpMode = WPI_MODE_GPIO_SYS;
+      break;
+
     case WPI_MODE_PINS:
       wpMode = WPI_MODE_PINS;
       break;
@@ -130,13 +135,45 @@ PHP_FUNCTION(gpio_pin_mode)
 {
   long pin, mode;
 
+  char fGpio[128];
+  FILE *pFile;
+
   if(zend_parse_parameters(ZEND_NUM_ARGS(), "ll", &pin, &mode) == FAILURE) {
     return;
   } else if (!_wp_setup_mode()) {
     return;
   }
 
-  pinMode((int) pin, (int) mode);
+  if (wpMode != WPI_MODE_GPIO_SYS) {
+    pinMode((int) pin, (int) mode);
+  } else {
+    sprintf(fGpio, "/sys/class/gpio/gpio%ld/value", pin);
+
+    // check if gpio is not exported
+    if (! (pFile = fopen(fGpio, "r"))) {
+      pFile = fopen ("/sys/class/gpio/export", "a");
+      fprintf(pFile, "%ld\n", pin);
+    }
+
+    fclose(pFile);
+
+    sprintf(fGpio, "/sys/class/gpio/gpio%ld/direction", pin);
+    do {
+      pFile = fopen (fGpio, "a");
+    } while (pFile == NULL);
+
+    // set new direction
+    if (mode == INPUT) {
+      fprintf(pFile, "in\n");
+    } else {
+      fprintf(pFile, "out\n");
+    }
+
+    fclose (pFile);
+
+    // force reinitialized to save the new status of GPIO
+    isInitialized = FALSE;
+  }
 
   RETURN_TRUE;
 }
@@ -178,13 +215,13 @@ int _wp_setup_mode(void)
 {
   if (isInitialized) {
     return 1;
+  } else if (wpMode == WPI_MODE_GPIO_SYS) {
+    wiringPiSetupSys();
   } else if (geteuid() != 0) {
     php_error_docref(NULL TSRMLS_CC, E_WARNING, "You must be root to use the current mode. (Did you forget sudo?)");
 
     return 0;
-  }
-
-  if (wpMode == WPI_MODE_GPIO) {
+  } else if (wpMode == WPI_MODE_GPIO) {
     wiringPiSetupGpio();
   } else {
     wiringPiSetup();
