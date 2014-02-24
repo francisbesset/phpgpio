@@ -15,7 +15,7 @@
 #ifndef PHP_GPIO_H
 #define PHP_GPIO_H
 
-#define PHP_GPIO_VERSION "0.2.0-DEV"
+#define PHP_GPIO_VERSION "0.2.0"
 
 #include "php.h"
 
