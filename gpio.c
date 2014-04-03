@@ -46,6 +46,7 @@ PHP_MINIT_FUNCTION(gpio)
   /* pin modes */
   REGISTER_LONG_CONSTANT("GPIO_INPUT", INPUT, CONST_CS | CONST_PERSISTENT);
   REGISTER_LONG_CONSTANT("GPIO_OUTPUT", OUTPUT, CONST_CS | CONST_PERSISTENT);
+  REGISTER_LONG_CONSTANT("GPIO_PWM", PWM_OUTPUT, CONST_CS | CONST_PERSISTENT);
 
   return SUCCESS;
 }
@@ -57,6 +58,11 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO(arginfo_gpio_pin_mode, 0)
   ZEND_ARG_INFO(0, pin)
   ZEND_ARG_INFO(0, mode)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO(arginfo_gpio_pwm, 0)
+  ZEND_ARG_INFO(0, pin)
+  ZEND_ARG_INFO(0, value)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO(arginfo_gpio_read, 0)
@@ -71,6 +77,7 @@ ZEND_END_ARG_INFO()
 zend_function_entry gpio_functions[] = {
   PHP_FE(gpio_mode, arginfo_gpio_mode)
   PHP_FE(gpio_pin_mode, arginfo_gpio_pin_mode)
+  PHP_FE(gpio_pwm, arginfo_gpio_pwm)
   PHP_FE(gpio_read, arginfo_gpio_read)
   PHP_FE(gpio_write, arginfo_gpio_write)
   {NULL, NULL, NULL}
@@ -144,7 +151,9 @@ PHP_FUNCTION(gpio_pin_mode)
     return;
   }
 
-  if (wpMode != WPI_MODE_GPIO_SYS) {
+  if (mode == PWM_OUTPUT) {
+    softPwmCreate((int) pin, 0, 100);
+  } else if (wpMode != WPI_MODE_GPIO_SYS) {
     pinMode((int) pin, (int) mode);
   } else {
     sprintf(fGpio, "/sys/class/gpio/gpio%ld/value", pin);
@@ -175,6 +184,21 @@ PHP_FUNCTION(gpio_pin_mode)
     isInitialized = FALSE;
   }
 
+  RETURN_TRUE;
+}
+
+PHP_FUNCTION(gpio_pwm)
+{
+  long pin, value;
+
+  if(zend_parse_parameters(ZEND_NUM_ARGS(), "ll", &pin, &value) == FAILURE) {
+    return;
+  } else if (!_wp_setup_mode()) {
+    return;
+  }
+
+  softPwmWrite((int) pin, (int) value);
+ 
   RETURN_TRUE;
 }
 

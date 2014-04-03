@@ -43,6 +43,7 @@ GPIO_HIGH - Value high
 
 GPIO_INPUT - Mode input
 GPIO_OUTPUT - Mode output
+GPIO_PWM - Mode PWM
 ```
 
 ### Functions
@@ -72,6 +73,20 @@ Set the mode for a pin.
 gpio_mode(GPIO_MODE_PINS);
 
 gpio_pin_mode(1, GPIO_OUTPUT); // set the pin #1 to output mode
+```
+
+The function return `true`.
+
+#### gpio_pwm(int $pin, int $value)
+
+Set the PWM value for a pin.
+
+```
+gpio_mode(GPIO_MODE_PINS);
+
+gpio_pin_mode(1, GPIO_PWM); // set the pin #1 to PWM mode
+gpio_pwm(1, 50); // set the pin #1 to 50% high value
+gpio_pwm(1, 75); // set the pin #1 to 75% high value
 ```
 
 The function return `true`.

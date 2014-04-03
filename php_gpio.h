@@ -31,6 +31,7 @@ PHP_MSHUTDOWN_FUNCTION(gpio);
 
 PHP_FUNCTION(gpio_mode);
 PHP_FUNCTION(gpio_pin_mode);
+PHP_FUNCTION(gpio_pwm);
 PHP_FUNCTION(gpio_read);
 PHP_FUNCTION(gpio_write);
 
